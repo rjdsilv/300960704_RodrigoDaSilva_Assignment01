@@ -1,3 +1,15 @@
+/**
+ * File containing the implementation of the solar system.
+ * 
+ * Author   : Rodrigo Januario da Silva
+ * Due Date : Feb 15, 2019
+ * File Name: assignment01.js
+ * Professor: Narendra Pershad
+ */
+
+/**
+ * Declare recurrent global variables
+ */
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.01, 2000);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
