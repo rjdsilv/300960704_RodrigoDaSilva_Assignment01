@@ -8,7 +8,7 @@ const stars = [];
 /**
  * Max Number of Stars.
  */
-const NUM_STARS = 50;
+const NUM_STARS = 90;
 const RANGE_X_Z = [-200, 200];
 const RANGE_Y = [-75, 75];
 
@@ -37,6 +37,7 @@ class CelestialBody {
      * @param {*} py         The body's position on y axis.
      * @param {*} pz         The body's position on z axis.
      * @param {*} emitsLight Flag indicating whether the body emits light.
+     * @param {*} isStar     Flag indicating whether the body is a start.
      */
     constructor(radius, color, px, py, pz, emitsLight, isStar) {
         this.numberOfSegments = 50;
@@ -88,6 +89,7 @@ class OrbitingCelestialBody extends CelestialBody {
      * @param {*} orbitedBody        The orbited body.
      * @param {*} referenceOrbitTime The reference orbit time used to calculate the time proportion for the orbit
      * @param {*} bodyOrbitTime      The body's orbit time
+     * @param {*} isMoon             Flag indicating whether the body is a moon.
      */
     constructor(radius, color, orbitRadius, orbitedBody, referenceOrbitTime, bodyOrbitTime, isMoon) {
         super(
@@ -110,6 +112,10 @@ class OrbitingCelestialBody extends CelestialBody {
         this.isMoon = isMoon;
     }
 
+    /**
+     * Method that will update the orbiting body position based on SIN and COS functions and the
+     * position of the orbiting's body.
+     */
     updatePosition() {
         this.angle += this.delta / this.bodyOrbitTime * (this.isMoon ? sceneProps.moonSpeed : sceneProps.planetSpeed);
         this.px = Math.cos(this.angle) * this.orbitRadius + this.orbitedBody.px;
@@ -133,7 +139,7 @@ const SUN_PROP = 15;
 const MED_PLAN_PROP = 70;
 const BIG_PLAN_PROP = 40;
 const SML_PLAN_PROP = 150;
-const DWF_PLAN_PROP = 225;
+const DWF_PLAN_PROP = 300;
 
 /**
  * Distance correction proportions, so all planets can be viewed in the same screen.
@@ -220,10 +226,21 @@ function init() {
  * done when creating the celestial objects. It's a constructor parameter.
  */
 function setupCameraAndLight() {
-    camera.position.set(0, 0, 150);
+    camera.position.set(-100, 50, 35);
     camera.lookAt(scene.position);
 }
 
+/**
+ * Function that will create all the geometry on the scene. The geometry comprises the following:
+ * <ul>
+ *   <li>The Suh</li>
+ *   <li>9 Planets</li>
+ *   <li>1 Earth Moon</li>
+ *   <li>5 Jupiter Moons</li>
+ *   <li>3 Saturn Moons</li>
+ *   <li>At most 90 stars as additional light sources</li>
+ * </ul>
+ */
 function createGeometry() {
     // The Stars
     for (let i = 0; i < NUM_STARS; i++) {
@@ -250,42 +267,22 @@ function createGeometry() {
     // The Earth Moon.
     for (let i = 0; i < EARTH_NUM_MOONS; i++) {
         celestialBodies.push(
-            new OrbitingCelestialBody(
-                moonRadius, 
-                0xC5C5C5, 
-                earthMoonDist,
-                celestialBodies[3],
-                mercuryTime,
-                earthMoonTime,
-                true));
+            new OrbitingCelestialBody(moonRadius, 0xC5C5C5, earthMoonDist, celestialBodies[3], mercuryTime, earthMoonTime, true));
     }
 
     // Jupter Moons.
     for (let i = 0; i < JUPITER_NUM_MOONS; i++) {
         celestialBodies.push(
-            new OrbitingCelestialBody(
-                moonRadius, 
-                0xC5C5C5,
-                jupiterMoonDist + Math.random() * 0.75,
-                celestialBodies[5],
-                mercuryTime,
-                jupiterMoonTime * (Math.random() + 0.75),
-                true));
+            new OrbitingCelestialBody(moonRadius, 0xC5C5C5, jupiterMoonDist + Math.random() * 0.75, celestialBodies[5], mercuryTime, jupiterMoonTime * (Math.random() + 0.75), true));
     }
 
     // Saturn Moons.
     for (let i = 0; i < SATURN_NUM_MOONS; i++) {
         celestialBodies.push(
-            new OrbitingCelestialBody(
-                moonRadius,
-                0xC5C5C5,
-                saturnMoonDist + Math.random() * 0.75,
-                celestialBodies[6],
-                mercuryTime,
-                saturnMoonTime * (Math.random() + 0.75),
-                true));
+            new OrbitingCelestialBody(moonRadius, 0xC5C5C5, saturnMoonDist + Math.random() * 0.75, celestialBodies[6], mercuryTime, saturnMoonTime * (Math.random() + 0.75), true));
     }
 
+    // Adds the Sun, the Planets, and the moons to the scene.
     for (body of celestialBodies) {
         scene.add(body.body);
         if (body.emitsLight) {
@@ -293,6 +290,7 @@ function createGeometry() {
         }
     }
 
+    // Adds the starts to the scene
     for (star of stars) {
         scene.add(star.body);
         if (star.emitsLight) {
@@ -301,10 +299,14 @@ function createGeometry() {
     }
 }
 
+/**
+ * Function that will add all the possible controls on the window.
+ */
 function setupDatGui() {
     let controls = new function () {
         this.showBodyMovement = sceneProps.showBodyMovement;
         this.planetSpeed = sceneProps.planetSpeed;
+        this.moonSpeed = sceneProps.moonSpeed;
         this.showMercury = true;
         this.showVenus = true;
         this.showEarth = true;
@@ -314,13 +316,14 @@ function setupDatGui() {
         this.showUranus = true;
         this.showNeptune = true;
         this.showPluto = true;
-        this.numberOfStars = NUM_STARS;
+        this.showStars = true;
     }
 
     let gui = new dat.GUI();
     gui.add(controls, 'showBodyMovement').name('Move Bodies').onChange((move) => sceneProps.showBodyMovement = move);
-    gui.add(controls, 'planetSpeed', 1, 25).name('Planet Speed').step(0.1).onChange((speed) => sceneProps.planetSpeed = speed);
-    gui.add(controls, 'showMercury').name('Show Earth').onChange((visible) => celestialBodies[1].body.visible = visible);
+    gui.add(controls, 'planetSpeed', 1, 25).name('Planets Speed').step(0.1).onChange((speed) => sceneProps.planetSpeed = speed);
+    gui.add(controls, 'moonSpeed', 1, 10).name('Moons Speed').step(0.1).onChange((speed) => sceneProps.moonSpeed = speed);
+    gui.add(controls, 'showMercury').name('Show Mercury').onChange((visible) => celestialBodies[1].body.visible = visible);
     gui.add(controls, 'showVenus').name('Show Venus').onChange((visible) => celestialBodies[2].body.visible = visible);
     gui.add(controls, 'showEarth').name('Show Earth').onChange((visible) => celestialBodies[3].body.visible = visible);
     gui.add(controls, 'showMars').name('Show Mars').onChange((visible) => celestialBodies[4].body.visible = visible);
@@ -329,19 +332,17 @@ function setupDatGui() {
     gui.add(controls, 'showUranus').name('Show Uranus').onChange((visible) => celestialBodies[7].body.visible = visible);
     gui.add(controls, 'showNeptune').name('Show Neptune').onChange((visible) => celestialBodies[8].body.visible = visible);
     gui.add(controls, 'showPluto').name('Show Pluto').onChange((visible) => celestialBodies[9].body.visible = visible);
-    gui.add(controls, 'numberOfStars', 0, NUM_STARS).name('Number of Stars').step(10).onChange((numberOfStars) => {
-        for (let i = 0; i < numberOfStars; i++) {
-            stars[i].body.visible = true;
-            stars[i].light.visible = true;
-        }
-
-        for (let i = numberOfStars; i < NUM_STARS; i++) {
-            stars[i].body.visible = false;
-            stars[i].light.visible = false;
+    gui.add(controls, 'showStars').name('Show Stars').onChange((visible) => {
+        for (let i = 0; i < NUM_STARS; i++) {
+            stars[i].body.visible = visible;
+            stars[i].light.visible = visible;
         }
     });
 }
 
+/**
+ * Function that will reder the whole scene
+ */
 function render() {
     // Updates the controls.
     trackballControls.update(clock.getDelta());
@@ -360,6 +361,9 @@ function render() {
     requestAnimationFrame(render);
 }
 
+/**
+ * Loads evertying when the window loads for the first time.
+ */
 window.onload = () => {
     init();
     setupCameraAndLight();
