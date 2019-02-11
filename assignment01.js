@@ -20,7 +20,7 @@ const stars = [];
 /**
  * Max Number of Stars.
  */
-const NUM_STARS = 90;
+const NUM_STARS = 100;
 const RANGE_X_Z = [-200, 200];
 const RANGE_Y = [-75, 75];
 
@@ -52,7 +52,7 @@ class CelestialBody {
      * @param {*} isStar     Flag indicating whether the body is a start.
      */
     constructor(radius, color, px, py, pz, emitsLight, isStar) {
-        this.numberOfSegments = 50;
+        this.numberOfSegments = 25;
         this.radius = radius;
         this.color = color;
         this.px = px;
@@ -61,6 +61,7 @@ class CelestialBody {
         this.emitsLight = emitsLight;
         this.isStar = isStar;
         this.light = undefined;
+        this.material = undefined;
         this.body = this.createBody();
     }
 
@@ -69,11 +70,11 @@ class CelestialBody {
      */
     createBody() {
         const geometry = new THREE.SphereGeometry(this.radius, this.numberOfSegments, this.numberOfSegments)
-        const material = new THREE.MeshPhongMaterial({
+        this.material = new THREE.MeshLambertMaterial({
             color: this.color,
             emissive: (this.emitsLight ? this.color : 0x000000)
         });
-        const body = new THREE.Mesh(geometry, material);
+        const body = new THREE.Mesh(geometry, this.material);
         body.position.set(this.px, this.py, this.pz);
 
         // Checks for light emission.
@@ -135,6 +136,23 @@ class OrbitingCelestialBody extends CelestialBody {
         this.body.position.set(this.px, this.py, this.pz);
     }
 }
+
+/**
+ * Body indexes.
+ */
+const SUN_IDX = 0;
+const MERCURY_IDX = 1;
+const VENUS_IDX = 2;
+const EARTH_IDX = 3;
+const MARS_IDX = 4;
+const JUPITER_IDX = 5;
+const SATURN_IDX = 6;
+const URANUS_IDX = 7;
+const NEPTUNE_IDX = 8;
+const PLUTO_IDX = 9;
+const EARTH_MOON_IDX = 10;
+const JUPITER_MOONS_IDX = 11;
+const SATURN_MOONS_IDX = 16;
 
 /**
  * Number of Moons per planet.
@@ -256,9 +274,9 @@ function setupCameraAndLight() {
 function createGeometry() {
     // The Stars
     for (let i = 0; i < NUM_STARS; i++) {
-        const px = RANGE_X_Z[i % 2] * ((-0.5 + Math.random()) * 2);
-        const py = RANGE_Y[i % 2] * ((-0.5 + Math.random()) * 2);
-        const pz = RANGE_X_Z[i % 2] * ((-0.5 + Math.random()) * 2);
+        const px = RANGE_X_Z[i % 2] * ((-0.5 + Math.random()) * 2) + 5;
+        const py = RANGE_Y[i % 2] * ((-0.5 + Math.random()) * 2) + 5;
+        const pz = RANGE_X_Z[i % 2] * ((-0.5 + Math.random()) * 2) + 5;
         stars.push(new CelestialBody(starRadius, 0xffffff, px, py, pz, true, true))
     }
 
@@ -266,32 +284,32 @@ function createGeometry() {
     celestialBodies.push(new CelestialBody(sunRadius, 0xf9d71c, 0, 0, 0, true, false));
 
     // The nine planets.
-    celestialBodies.push(new OrbitingCelestialBody(mercuryRadius, 0xC5C5C5, mercuryDist, celestialBodies[0], mercuryTime, mercuryTime, false));
-    celestialBodies.push(new OrbitingCelestialBody(venusRadius, 0xFFFACD, venusDist, celestialBodies[0], mercuryTime, venusTime, false));
-    celestialBodies.push(new OrbitingCelestialBody(earthRadius, 0x1E90FF, earthDist, celestialBodies[0], mercuryTime, earthTime, false));
-    celestialBodies.push(new OrbitingCelestialBody(marsRadius, 0xD2B48C, marsDist, celestialBodies[0], mercuryTime, marsTime, false));
-    celestialBodies.push(new OrbitingCelestialBody(jupiterRadius, 0xFFA500, jupterDist, celestialBodies[0], mercuryTime, jupiterTime, false));
-    celestialBodies.push(new OrbitingCelestialBody(saturnRadius, 0xF0E68C, saturnDist, celestialBodies[0], mercuryTime, saturnTime, false));
-    celestialBodies.push(new OrbitingCelestialBody(uranusRadius, 0xADD8E6, uranusDist, celestialBodies[0], mercuryTime, uranusTime, false));
-    celestialBodies.push(new OrbitingCelestialBody(neptuneRadius, 0xFFA500, neptuneDist, celestialBodies[0], mercuryTime, neptuneTime, false));
-    celestialBodies.push(new OrbitingCelestialBody(plutoRadius, 0xFFEBCD, plutoDist, celestialBodies[0], mercuryTime, plutoTime, false));
+    celestialBodies.push(new OrbitingCelestialBody(mercuryRadius, 0xC5C5C5, mercuryDist, celestialBodies[SUN_IDX], mercuryTime, mercuryTime, false));
+    celestialBodies.push(new OrbitingCelestialBody(venusRadius, 0xFFFACD, venusDist, celestialBodies[SUN_IDX], mercuryTime, venusTime, false));
+    celestialBodies.push(new OrbitingCelestialBody(earthRadius, 0x1E90FF, earthDist, celestialBodies[SUN_IDX], mercuryTime, earthTime, false));
+    celestialBodies.push(new OrbitingCelestialBody(marsRadius, 0xD2B48C, marsDist, celestialBodies[SUN_IDX], mercuryTime, marsTime, false));
+    celestialBodies.push(new OrbitingCelestialBody(jupiterRadius, 0xFFA500, jupterDist, celestialBodies[SUN_IDX], mercuryTime, jupiterTime, false));
+    celestialBodies.push(new OrbitingCelestialBody(saturnRadius, 0xF0E68C, saturnDist, celestialBodies[SUN_IDX], mercuryTime, saturnTime, false));
+    celestialBodies.push(new OrbitingCelestialBody(uranusRadius, 0xADD8E6, uranusDist, celestialBodies[SUN_IDX], mercuryTime, uranusTime, false));
+    celestialBodies.push(new OrbitingCelestialBody(neptuneRadius, 0xFFA500, neptuneDist, celestialBodies[SUN_IDX], mercuryTime, neptuneTime, false));
+    celestialBodies.push(new OrbitingCelestialBody(plutoRadius, 0xFFEBCD, plutoDist, celestialBodies[SUN_IDX], mercuryTime, plutoTime, false));
 
     // The Earth Moon.
     for (let i = 0; i < EARTH_NUM_MOONS; i++) {
         celestialBodies.push(
-            new OrbitingCelestialBody(moonRadius, 0xC5C5C5, earthMoonDist, celestialBodies[3], mercuryTime, earthMoonTime, true));
+            new OrbitingCelestialBody(moonRadius, 0xC5C5C5, earthMoonDist, celestialBodies[EARTH_IDX], mercuryTime, earthMoonTime, true));
     }
 
-    // Jupter Moons.
+    // Jupiter Moons.
     for (let i = 0; i < JUPITER_NUM_MOONS; i++) {
         celestialBodies.push(
-            new OrbitingCelestialBody(moonRadius, 0xC5C5C5, jupiterMoonDist + Math.random() * 0.75, celestialBodies[5], mercuryTime, jupiterMoonTime * (Math.random() + 0.75), true));
+            new OrbitingCelestialBody(moonRadius, 0xC5C5C5, jupiterMoonDist + Math.random() * 0.75, celestialBodies[JUPITER_IDX], mercuryTime, jupiterMoonTime * (Math.random() + 0.75), true));
     }
 
     // Saturn Moons.
     for (let i = 0; i < SATURN_NUM_MOONS; i++) {
         celestialBodies.push(
-            new OrbitingCelestialBody(moonRadius, 0xC5C5C5, saturnMoonDist + Math.random() * 0.75, celestialBodies[6], mercuryTime, saturnMoonTime * (Math.random() + 0.75), true));
+            new OrbitingCelestialBody(moonRadius, 0xC5C5C5, saturnMoonDist + Math.random() * 0.75, celestialBodies[SATURN_IDX], mercuryTime, saturnMoonTime * (Math.random() + 0.75), true));
     }
 
     // Adds the Sun, the Planets, and the moons to the scene.
@@ -329,25 +347,70 @@ function setupDatGui() {
         this.showNeptune = true;
         this.showPluto = true;
         this.showStars = true;
+        this.wireframe = false;
     }
 
-    let gui = new dat.GUI();
-    gui.add(controls, 'showBodyMovement').name('Move Bodies').onChange((move) => sceneProps.showBodyMovement = move);
-    gui.add(controls, 'planetSpeed', 1, 25).name('Planets Speed').step(0.1).onChange((speed) => sceneProps.planetSpeed = speed);
-    gui.add(controls, 'moonSpeed', 1, 10).name('Moons Speed').step(0.1).onChange((speed) => sceneProps.moonSpeed = speed);
-    gui.add(controls, 'showMercury').name('Show Mercury').onChange((visible) => celestialBodies[1].body.visible = visible);
-    gui.add(controls, 'showVenus').name('Show Venus').onChange((visible) => celestialBodies[2].body.visible = visible);
-    gui.add(controls, 'showEarth').name('Show Earth').onChange((visible) => celestialBodies[3].body.visible = visible);
-    gui.add(controls, 'showMars').name('Show Mars').onChange((visible) => celestialBodies[4].body.visible = visible);
-    gui.add(controls, 'showJupiter').name('Show Jupiter').onChange((visible) => celestialBodies[5].body.visible = visible);
-    gui.add(controls, 'showSaturn').name('Show Saturn').onChange((visible) => celestialBodies[6].body.visible = visible);
-    gui.add(controls, 'showUranus').name('Show Uranus').onChange((visible) => celestialBodies[7].body.visible = visible);
-    gui.add(controls, 'showNeptune').name('Show Neptune').onChange((visible) => celestialBodies[8].body.visible = visible);
-    gui.add(controls, 'showPluto').name('Show Pluto').onChange((visible) => celestialBodies[9].body.visible = visible);
-    gui.add(controls, 'showStars').name('Show Stars').onChange((visible) => {
+    const gui = new dat.GUI();
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Puts all movement controls together.                                                                                                            //
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    const movementFolder = gui.addFolder('Movement Management');
+    movementFolder.add(controls, 'showBodyMovement').name('Move Bodies').onChange((move) => sceneProps.showBodyMovement = move);
+    movementFolder.add(controls, 'planetSpeed', 1, 25).name('Planets Speed').step(0.1).onChange((speed) => sceneProps.planetSpeed = speed);
+    movementFolder.add(controls, 'moonSpeed', 1, 10).name('Moons Speed').step(0.1).onChange((speed) => sceneProps.moonSpeed = speed);
+    movementFolder.close();
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Puts all celestial body controls together.                                                                                                      //
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    const bodyFolder = gui.addFolder('Show / Hide Planets');
+    bodyFolder.add(controls, 'showMercury').name('Show Mercury').onChange((visible) => celestialBodies[MERCURY_IDX].body.visible = visible)
+    bodyFolder.add(controls, 'showVenus').name('Show Venus').onChange((visible) => celestialBodies[VENUS_IDX].body.visible = visible);
+
+    // Hides / shows the Earth and its moon.
+    bodyFolder.add(controls, 'showEarth').name('Show Earth').onChange((visible) => {
+        celestialBodies[EARTH_IDX].body.visible = visible;              // Hides / shows the Earth
+        celestialBodies[EARTH_MOON_IDX].body.visible = visible;             // Hides / shows Earth's moon.
+    });
+
+    bodyFolder.add(controls, 'showMars').name('Show Mars').onChange((visible) => celestialBodies[MARS_IDX].body.visible = visible);
+
+    // Hides / shows the Jupiter and its moons.
+    bodyFolder.add(controls, 'showJupiter').name('Show Jupiter').onChange((visible) => {
+        celestialBodies[JUPITER_IDX].body.visible = visible;              // Hides / shows Jupiter.
+        for (let i = JUPITER_MOONS_IDX; i < JUPITER_MOONS_IDX + JUPITER_NUM_MOONS; i++) {     // Hides / shows Jupiter's moons.
+            celestialBodies[i].body.visible = visible;
+        }
+    });
+
+    // Hides / shows the Saturn and its moons.
+    bodyFolder.add(controls, 'showSaturn').name('Show Saturn').onChange((visible) => {
+        celestialBodies[SATURN_IDX].body.visible = visible;              // Hides / shows Saturn.
+        for (let i = SATURN_MOONS_IDX; i < SATURN_MOONS_IDX + SATURN_NUM_MOONS; i++) {      // Hides / shows Saturn's moons.
+            celestialBodies[i].body.visible = visible;
+        }
+    });
+
+    bodyFolder.add(controls, 'showUranus').name('Show Uranus').onChange((visible) => celestialBodies[URANUS_IDX].body.visible = visible);
+    bodyFolder.add(controls, 'showNeptune').name('Show Neptune').onChange((visible) => celestialBodies[NEPTUNE_IDX].body.visible = visible);
+    bodyFolder.add(controls, 'showPluto').name('Show Pluto').onChange((visible) => celestialBodies[PLUTO_IDX].body.visible = visible);
+
+    // Hides / shows all the stars rendered.
+    bodyFolder.add(controls, 'showStars').name('Show Stars').onChange((visible) => {
         for (let i = 0; i < NUM_STARS; i++) {
             stars[i].body.visible = visible;
             stars[i].light.visible = visible;
+        }
+    });
+    bodyFolder.close();
+
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Puts all celestial body controls together.                                                                                                      //
+    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    gui.add(controls, 'wireframe').name('Wireframe').onChange((wireframe) => {
+        for (body of celestialBodies) {
+            body.material.wireframe = wireframe;
         }
     });
 }
