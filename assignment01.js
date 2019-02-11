@@ -29,8 +29,8 @@ const RANGE_Y = [-75, 75];
  */
 const sceneProps = {
     showBodyMovement: true,
-    planetSpeed: 5,
-    moonSpeed: 5,
+    planetSpeed: 2.5,
+    moonSpeed: 2.5,
     numberOfStars: NUM_STARS
 }
 
@@ -295,10 +295,8 @@ function createGeometry() {
     celestialBodies.push(new OrbitingCelestialBody(plutoRadius, 0xFFEBCD, plutoDist, celestialBodies[SUN_IDX], mercuryTime, plutoTime, false));
 
     // The Earth Moon.
-    for (let i = 0; i < EARTH_NUM_MOONS; i++) {
-        celestialBodies.push(
-            new OrbitingCelestialBody(moonRadius, 0xC5C5C5, earthMoonDist, celestialBodies[EARTH_IDX], mercuryTime, earthMoonTime, true));
-    }
+    celestialBodies.push(
+        new OrbitingCelestialBody(moonRadius, 0xC5C5C5, earthMoonDist, celestialBodies[EARTH_IDX], mercuryTime, earthMoonTime, true));
 
     // Jupiter Moons.
     for (let i = 0; i < JUPITER_NUM_MOONS; i++) {
